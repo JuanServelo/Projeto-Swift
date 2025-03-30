@@ -1,0 +1,219 @@
+import Foundation
+
+// MARK: - PROTOCOLO NOTIFICAVEL
+
+/// Protocolo que define o comportamento de qualquer tipo de notificação.
+/// Permite o uso de polimorfismo com diferentes canais (Email, SMS, Push).
+protocol Notificavel {
+    var mensagem: Mensagem { get }
+    var prioridade: Prioridade { get }
+    func enviarNotificacao()
+}
+
+// MARK: - ESTRUTURAS CONCRETAS
+
+/// Struct para representar uma notificação via Email.
+struct Email: Notificavel {
+    var enderecoEmail: String
+    var mensagem: Mensagem
+    var prioridade: Prioridade
+
+    func enviarNotificacao() {
+        print("══════════════════════════════════════════════════════")
+        print("[Email] Enviando email de [\(mensagem.tipo)] para \(enderecoEmail): \(mensagem.conteudo) [Prioridade: \(prioridade.rawValue)]")
+        print("══════════════════════════════════════════════════════")
+    }
+}
+
+/// Struct para representar uma notificação via SMS.
+struct SMS: Notificavel {
+    var numeroTelefone: String
+    var mensagem: Mensagem
+    var prioridade: Prioridade
+
+    func enviarNotificacao() {
+        print("══════════════════════════════════════════════════════")
+        print("[SMS] Enviando SMS de [\(mensagem.tipo)] para \(numeroTelefone): \(mensagem.conteudo) [Prioridade: \(prioridade.rawValue)]")
+        print("══════════════════════════════════════════════════════")
+    }
+}
+
+/// Struct para representar uma notificação via push (notificações de dispositivo).
+struct PushNotification: Notificavel {
+    var tokenDispositivo: String
+    var mensagem: Mensagem
+    var prioridade: Prioridade
+
+    func enviarNotificacao() {
+        print("══════════════════════════════════════════════════════")
+        print("[Push] Enviando push notification de [\(mensagem.tipo)] para dispositivo \(tokenDispositivo): \(mensagem.conteudo) [Prioridade: \(prioridade.rawValue)]")
+        print("══════════════════════════════════════════════════════")
+    }
+}
+
+// MARK: - ENUMS
+
+/// Enum que define a prioridade da notificação.
+enum Prioridade: String {
+    case baixa = "Baixa"
+    case media = "Média"
+    case alta = "Alta"
+}
+
+/// Enum que define os tipos possíveis de mensagens a serem enviadas.
+enum TipoMensagem: String {
+    case promocao = "Promoção"
+    case lembrete = "Lembrete"
+    case alerta = "Alerta"
+}
+
+// MARK: - MODELO DE MENSAGEM
+
+/// Struct que representa uma mensagem com tipo e conteúdo.
+struct Mensagem {
+    let tipo: TipoMensagem
+    let conteudo: String
+}
+
+// MARK: - FUNÇÕES DE SUPORTE
+
+/// Permite ao usuário escolher a prioridade de uma notificação.
+func escolherPrioridade() -> Prioridade {
+    print("══════════════════════════════════════════════════════")
+    print("Escolha a prioridade da notificação:")
+    print("1 - Baixa")
+    print("2 - Média")
+    print("3 - Alta")
+    print("══════════════════════════════════════════════════════")
+
+    if let opcao = readLine(), let escolha = Int(opcao) {
+        switch escolha {
+        case 1: return .baixa
+        case 2: return .media
+        case 3: return .alta
+        default:
+            print("Opção inválida, definindo como Média.")
+            return .media
+        }
+    }
+    print("Entrada inválida, definindo como Média.")
+    return .media
+}
+
+/// Permite ao usuário escolher o tipo da mensagem.
+func escolherTipoMensagem() -> TipoMensagem {
+    print("══════════════════════════════════════════════════════")
+    print("Escolha o tipo da mensagem:")
+    print("1 - Alerta")
+    print("2 - Promoção")
+    print("3 - Lembrete")
+    print("══════════════════════════════════════════════════════")
+
+    if let opcao = readLine(), let escolha = Int(opcao) {
+        switch escolha {
+        case 1: return .alerta
+        case 2: return .promocao
+        case 3: return .lembrete
+        default:
+            print("Opção inválida, mensagem definida como alerta.")
+            return .alerta
+        }
+    }
+    print("Entrada inválida, mensagem definida como alerta.")
+    return .alerta
+}
+
+/// Agrupa as notificações adicionadas com base na sua prioridade.
+/// Permite que elas sejam enviadas em ordem de importância.
+func agruparPorPrioridade(canais: [Notificavel]) -> [Prioridade: [Notificavel]] {
+    var agrupado: [Prioridade: [Notificavel]] = [:]
+    for canal in canais {
+        agrupado[canal.prioridade, default: []].append(canal)
+    }
+    return agrupado
+}
+
+// MARK: - EXECUÇÃO PRINCIPAL DO APLICATIVO
+
+/// Lista que armazena todas as notificações criadas.
+var canais: [Notificavel] = []
+
+// Loop que exibe o menu 
+while true {
+    print("\n══════════════════════════════════════════════════════")
+    print("Menu:")
+    print("1 - Adicionar Email")
+    print("2 - Adicionar SMS")
+    print("3 - Adicionar Push Notification")
+    print("4 - Enviar Notificações")
+    print("0 - Sair")
+    print("══════════════════════════════════════════════════════")
+
+    if let opcao = readLine(), let escolha = Int(opcao) {
+        switch escolha {
+        case 1:
+            // Captura os dados de email do usuário
+            print("══════════════════════════════════════════════════════")
+            print("Digite o email:")
+            let emailUsuario = readLine() ?? ""
+            print("══════════════════════════════════════════════════════")
+            print("Digite a mensagem:")
+            let mensagemUsuario = readLine() ?? ""
+            let tipoMensagem = escolherTipoMensagem()
+            let prioridade = escolherPrioridade()
+            let email = Email(enderecoEmail: emailUsuario, mensagem: Mensagem(tipo: tipoMensagem, conteudo: mensagemUsuario), prioridade: prioridade)
+            canais.append(email)
+        case 2:
+            // Captura os dados de SMS do usuário
+            print("══════════════════════════════════════════════════════")
+            print("Digite o número de telefone:")
+            let telefoneUsuario = readLine() ?? ""
+            print("══════════════════════════════════════════════════════")
+            print("Digite a mensagem:")
+            let mensagemUsuario = readLine() ?? ""
+            let tipoMensagem = escolherTipoMensagem()
+            let prioridade = escolherPrioridade()
+            let sms = SMS(numeroTelefone: telefoneUsuario, mensagem: Mensagem(tipo: tipoMensagem, conteudo: mensagemUsuario), prioridade: prioridade)
+            canais.append(sms)
+        case 3:
+            // Captura os dados de push notification do usuário
+            print("══════════════════════════════════════════════════════")
+            print("Digite o token do dispositivo:")
+            let tokenDispositivo = readLine() ?? ""
+            print("══════════════════════════════════════════════════════")
+            print("Digite a mensagem:")
+            let mensagemUsuario = readLine() ?? ""
+            let tipoMensagem = escolherTipoMensagem()
+            let prioridade = escolherPrioridade()
+            let push = PushNotification(tokenDispositivo: tokenDispositivo, mensagem: Mensagem(tipo: tipoMensagem, conteudo: mensagemUsuario), prioridade: prioridade)
+            canais.append(push)
+        case 4:
+            // Agrupa e envia as notificações por ordem de prioridade
+            let agrupado = agruparPorPrioridade(canais: canais)
+            for prioridade in [Prioridade.alta, Prioridade.media, Prioridade.baixa] {
+                if let notificacoes = agrupado[prioridade] {
+                    print("══════════════════════════════════════════════════════")
+                    print("Enviando notificações com prioridade \(prioridade.rawValue):")
+                    print("══════════════════════════════════════════════════════")
+                    for notificacao in notificacoes {
+                        notificacao.enviarNotificacao()
+                    }
+                }
+            }
+        case 0:
+            print("Saindo...")
+            exit(0)
+        default:
+            print("Opção inválida. Tente novamente.")
+        }
+    } else {
+        print("Entrada inválida. Tente novamente.")
+    }
+}
+
+//Decisões de design
+
+/// Uso de protocolo para garantir extensibilidade e reutilização.
+/// Enums para evitar valores inconsistentes e melhorar a legibilidade.
+/// Estrutura modular e funções separadas para responsabilidade única.
+/// Interface interativa via terminal para facilitar testes e simulações.
