@@ -53,3 +53,4 @@ Enviando notificações com prioridade Alta:
 - Separação de lógica por funções auxiliares.
 - Interface simples e acessível via terminal.
 
+Integrantes do grupo: Juan Servelo, João Tancon, Thais Amaral, Luana Akemi e Ray Govaski
